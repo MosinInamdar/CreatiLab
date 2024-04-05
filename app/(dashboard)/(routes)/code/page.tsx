@@ -51,10 +51,16 @@ const CodePage = () => {
 
       form.reset();
     } catch (error) {
-      if (error?.response?.status === 403) {
-        proModal.onOpen();
+      if (axios.isAxiosError(error)) {
+        // This checks if it's an Axios error
+        if (error.response?.status === 403) {
+          proModal.onOpen();
+        } else {
+          toast.error("Something went wrong.");
+        }
       } else {
-        toast.error("Something went wrong.");
+        // Handle non-Axios errors here
+        console.error("An unexpected error occurred:", error);
       }
     } finally {
       router.refresh();
