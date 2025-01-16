@@ -1,59 +1,69 @@
+# Base image
 FROM node:18-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache libc6-compat postgresql-client openssl && \
+    ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so.1 && \
+    ln -s /usr/lib/libcrypto.so.1.1 /usr/lib/libcrypto.so.1
+
+WORKDIR /app
 
 # Install dependencies only when needed
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Copy package manager lockfiles and package.json
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+
+# Install dependencies based on the lockfile
 RUN \
     if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
     elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-    else echo "Lockfile not found." && exit 1; \
+    elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm install --frozen-lockfile; \
+    else echo "No lockfile found" && exit 1; \
     fi
 
-
-# Rebuild the source code only when needed
+# Build stage: Compile the Next.js app
 FROM base AS builder
 WORKDIR /app
+
+# Copy dependencies from the deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# Disable telemetry during the build
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN yarn build
 
-# If using npm comment out above and use below instead
-# RUN npm run build
-
-# Production image, copy all the files and run next
+# Production stage: Create the final production image
 FROM base AS runner
 WORKDIR /app
 
+# Set environment to production
 ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
 
+# Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy necessary files for runtime
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Set ownership to non-root user
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
+# Expose the default Next.js port
 EXPOSE 3000
 
+# Set the runtime port
 ENV PORT 3000
 
+# Add PostgreSQL-related environment variables (update these values as needed)
+ENV DATABASE_URL="postgresql://postgres:admin@host.docker.internal:5433/creatiLab"
+
+# Start the application
 CMD ["node", "server.js"]
