@@ -39,8 +39,7 @@ export async function POST(req: Request) {
       method: "POST",
       url: "https://api.edenai.run/v2/video/generation_async",
       headers: {
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZTE3NWU3OTctMTg5Mi00ODVhLWJjNTYtOWQxNTIzMTM1YzI3IiwidHlwZSI6ImFwaV90b2tlbiJ9.OGOVnJ-x1PZH7WZYwPTE7URg2S43L2TTrtD4wSKELqo",
+        Authorization: `Bearer ${process.env.API_TOKEN}`,
         ...form.getHeaders(),
       },
       data: form,
