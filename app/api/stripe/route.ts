@@ -46,7 +46,7 @@ export async function GET() {
               name: "CreatiLab Pro",
               description: "Unlimited AI Generations",
             },
-            unit_amount: 200000,
+            unit_amount: 160000,
             recurring: {
               interval: "month",
             },

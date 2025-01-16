@@ -1,15 +1,9 @@
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-import { Configuration, OpenAIApi } from "openai";
 
 import { checkSubscription } from "@/lib/subscription";
 import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
+const axios = require("axios").default;
 
 export async function POST(req: Request) {
   try {
@@ -19,12 +13,6 @@ export async function POST(req: Request) {
 
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    if (!configuration.apiKey) {
-      return new NextResponse("OpenAI API Key not configured.", {
-        status: 500,
-      });
     }
 
     if (!prompt) {
@@ -49,17 +37,27 @@ export async function POST(req: Request) {
       );
     }
 
-    const response = await openai.createImage({
-      prompt,
-      n: parseInt(amount, 10),
-      size: resolution,
-    });
+    const options = {
+      method: "POST",
+      url: "https://api.edenai.run/v2/image/generation",
+      headers: {
+        authorization:
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZTE3NWU3OTctMTg5Mi00ODVhLWJjNTYtOWQxNTIzMTM1YzI3IiwidHlwZSI6ImFwaV90b2tlbiJ9.OGOVnJ-x1PZH7WZYwPTE7URg2S43L2TTrtD4wSKELqo",
+      },
+      data: {
+        providers: "replicate/classic",
+        text: prompt,
+        resolution: resolution,
+      },
+    };
+
+    const response = await axios.request(options);
 
     if (!isPro) {
       await incrementApiLimit();
     }
 
-    return NextResponse.json(response.data.data);
+    return NextResponse.json(response.data["replicate/classic"]);
   } catch (error) {
     console.log("[IMAGE_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });

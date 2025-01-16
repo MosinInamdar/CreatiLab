@@ -1,12 +1,13 @@
 import Replicate from "replicate";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
+const axios = require("axios").default;
 
 import { incrementApiLimit, checkApiLimit } from "@/lib/api-limit";
 import { checkSubscription } from "@/lib/subscription";
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN!,
+  auth: process.env.REPLICATE_API_KEY!,
 });
 
 export async function POST(req: Request) {
@@ -33,20 +34,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const response = await replicate.run(
-      "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
-      {
-        input: {
-          prompt_a: prompt,
-        },
-      }
-    );
+    const options = {
+      method: "POST",
+      url: "https://api.edenai.run/v2/audio/text_to_speech",
+      headers: {
+        authorization:
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZTE3NWU3OTctMTg5Mi00ODVhLWJjNTYtOWQxNTIzMTM1YzI3IiwidHlwZSI6ImFwaV90b2tlbiJ9.OGOVnJ-x1PZH7WZYwPTE7URg2S43L2TTrtD4wSKELqo",
+      },
+      data: {
+        providers: "google",
+        language: "en",
+        text: prompt,
+        option: "FEMALE",
+      },
+    };
+
+    const response = await axios.request(options);
 
     if (!isPro) {
       await incrementApiLimit();
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response.data);
   } catch (error) {
     console.log("[MUSIC_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });

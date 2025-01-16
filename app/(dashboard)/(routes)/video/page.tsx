@@ -39,7 +39,13 @@ const VideoPage = () => {
 
       const response = await axios.post("/api/video", values);
 
-      setVideo(response.data[0]);
+      // Extract the video_resource_url from the nested structure
+      const videoUrl =
+        response.data.results["amazon/amazon.nova-reel-v1:0"]
+          .video_resource_url;
+
+      // Use the extracted URL
+      setVideo(videoUrl);
       form.reset();
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -112,6 +118,7 @@ const VideoPage = () => {
         {isLoading && (
           <div className="p-20">
             <Loader />
+            <h1>Takes minimum 5 minutes to Generate...</h1>
           </div>
         )}
         {!video && !isLoading && <Empty label="No video files generated." />}

@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Music,
   Settings,
+  SpeechIcon,
   VideoIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -45,10 +46,10 @@ const routes = [
     href: "/video",
   },
   {
-    label: "Music Generation",
-    icon: Music,
+    label: "Speech Generation",
+    icon: SpeechIcon,
     color: "text-emerald-500",
-    href: "/music",
+    href: "/speech",
   },
   {
     label: "Code Generation",

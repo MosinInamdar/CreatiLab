@@ -50,7 +50,10 @@ const PhotoPage = () => {
 
       const response = await axios.post("/api/image", values);
 
-      const urls = response.data.map((image: { url: string }) => image.url);
+      // Extract the image URLs from the `items` array in the response
+      const urls = response.data.items.map(
+        (item: { image_resource_url: string }) => item.image_resource_url
+      );
 
       setPhotos(urls);
     } catch (error) {

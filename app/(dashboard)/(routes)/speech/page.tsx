@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Music, Send } from "lucide-react";
+import { Speech } from "lucide-react";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,10 @@ import { useProModal } from "@/hooks/use-pro-modal";
 
 import { formSchema } from "./constants";
 
-const MusicPage = () => {
+const SpeechPage = () => {
   const proModal = useProModal();
   const router = useRouter();
-  const [music, setMusic] = useState<string>();
+  const [speech, setSpeech] = useState<string>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,12 +35,13 @@ const MusicPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setMusic(undefined);
+      setSpeech(undefined);
 
-      const response = await axios.post("/api/music", values);
-      console.log(response);
+      const response = await axios.post("/api/speech", values);
+      // Correct path to audio_resource_url
+      console.log(response.data.google.audio_resource_url);
 
-      setMusic(response.data.audio);
+      setSpeech(response.data.google.audio_resource_url);
       form.reset();
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -62,9 +63,9 @@ const MusicPage = () => {
   return (
     <div>
       <Heading
-        title="Music Generation"
-        description="Turn your prompt into music."
-        icon={Music}
+        title="Speech Generation"
+        description="Turn your prompt into speech."
+        icon={Speech}
         iconColor="text-emerald-500"
         bgColor="bg-emerald-500/10"
       />
@@ -93,7 +94,7 @@ const MusicPage = () => {
                     <Input
                       className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                       disabled={isLoading}
-                      placeholder="Piano solo"
+                      placeholder="Hello I am Amy!"
                       {...field}
                     />
                   </FormControl>
@@ -115,10 +116,10 @@ const MusicPage = () => {
             <Loader />
           </div>
         )}
-        {!music && !isLoading && <Empty label="No music generated." />}
-        {music && (
+        {!speech && !isLoading && <Empty label="No music generated." />}
+        {speech && (
           <audio controls className="w-full mt-8">
-            <source src={music} />
+            <source src={speech} />
           </audio>
         )}
       </div>
@@ -126,4 +127,4 @@ const MusicPage = () => {
   );
 };
 
-export default MusicPage;
+export default SpeechPage;
