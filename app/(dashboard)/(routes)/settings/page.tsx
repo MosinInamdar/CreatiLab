@@ -24,6 +24,54 @@ const SettingsPage = async () => {
         </div>
         <SubscriptionButton isPro={isPro} />
       </div>
+
+      {/* Policy Links Section */}
+      <div className="px-4 lg:px-8 space-y-2 mt-6">
+        <h3 className="text-lg font-medium text-gray-800">Policies</h3>
+        <ul className="list-disc pl-5 space-y-2">
+          <li>
+            <a
+              href="/terms-and-conditions"
+              target="_blank"
+              className="text-blue-600 hover:underline"
+            >
+              Terms and Conditions
+            </a>
+          </li>
+          <li>
+            <a
+              href="/privacy-policy"
+              target="_blank"
+              className="text-blue-600 hover:underline"
+            >
+              Privacy Policy
+            </a>
+          </li>
+          <li>
+            <a
+              href="/refund-policy"
+              target="_blank"
+              className="text-blue-600 hover:underline"
+            >
+              Refund Policy
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      {/* Contact Me Section */}
+      <div className="px-4 lg:px-8 mt-6">
+        <h3 className="text-lg font-medium text-gray-800">Contact Me</h3>
+        <p className="text-sm text-muted-foreground">
+          Have questions or concerns? Feel free to reach out via email.
+        </p>
+        <a
+          href="mailto:mosininamdar18@gmail.com"
+          className="text-blue-600 hover:underline text-sm"
+        >
+          CreatiLab™ Mail
+        </a>
+      </div>
     </div>
   );
 };
